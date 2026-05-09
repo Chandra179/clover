@@ -1,0 +1,8 @@
+### GET /news (default category = tech)
+GET http://localhost:8080/news
+
+### GET /news?category=tech
+GET http://localhost:8080/news?category=tech
+
+### GET /news?category=economy
+GET http://localhost:8080/news?category=economy
