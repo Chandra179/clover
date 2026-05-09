@@ -46,7 +46,7 @@ func (d *Dependencies) NewsHandler(c *gin.Context) {
 		errs          []string
 	)
 
-	wg.Add(2)
+	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
