@@ -34,11 +34,12 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 		}
 		for _, item := range items {
 			results = append(results, CategoryResult{
-				Title:    item.Title,
-				URL:      item.Link,
-				Content:  truncate(item.Content, 300),
-				Category: category,
-				Source:   "rss",
+				Title:       item.Title,
+				URL:         item.Link,
+				Content:     truncate(item.Content, 300),
+				Category:    category,
+				Source:      "rss",
+				PublishedAt: item.PublishedAt,
 			})
 		}
 	}
@@ -74,9 +75,10 @@ func (d *Dependencies) fetchFeed(ctx context.Context, client *http.Client, feedU
 }
 
 type rawItem struct {
-	Title   string
-	Link    string
-	Content string
+	Title       string
+	Link        string
+	Content     string
+	PublishedAt string
 }
 
 func (d *Dependencies) parseFeed(body []byte) ([]rawItem, error) {
@@ -105,9 +107,10 @@ func (d *Dependencies) parseFeed(body []byte) ([]rawItem, error) {
 				link = item.GUID
 			}
 			items = append(items, rawItem{
-				Title:   item.Title,
-				Link:    link,
-				Content: content,
+				Title:       item.Title,
+				Link:        link,
+				Content:     content,
+				PublishedAt: item.PubDate,
 			})
 		}
 		return items, nil
@@ -124,10 +127,15 @@ func (d *Dependencies) parseFeed(body []byte) ([]rawItem, error) {
 			if content == "" {
 				content = entry.Title
 			}
+			published := entry.Published
+			if published == "" {
+				published = entry.Updated
+			}
 			items = append(items, rawItem{
-				Title:   entry.Title,
-				Link:    entry.Link.Href,
-				Content: content,
+				Title:       entry.Title,
+				Link:        entry.Link.Href,
+				Content:     content,
+				PublishedAt: published,
 			})
 		}
 		return items, nil

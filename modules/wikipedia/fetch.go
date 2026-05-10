@@ -17,11 +17,12 @@ var CategorySearchTerms = map[string]string{
 }
 
 type CategoryResult struct {
-	Title    string `json:"title"`
-	URL      string `json:"url"`
-	Content  string `json:"content"`
-	Category string `json:"category"`
-	Source   string `json:"source"`
+	Title       string `json:"title"`
+	URL         string `json:"url"`
+	Content     string `json:"content"`
+	Category    string `json:"category"`
+	Source      string `json:"source"`
+	PublishedAt string `json:"published_at"`
 }
 
 func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) {
@@ -68,11 +69,12 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 	for _, s := range qr.Query.Search {
 		u := fmt.Sprintf("https://en.wikipedia.org/wiki/%s", url.PathEscape(s.Title))
 		results = append(results, CategoryResult{
-			Title:    s.Title,
-			URL:      u,
-			Content:  stripHTML(s.Snippet),
-			Category: category,
-			Source:   "wikipedia",
+			Title:       s.Title,
+			URL:         u,
+			Content:     stripHTML(s.Snippet),
+			Category:    category,
+			Source:      "wikipedia",
+			PublishedAt: s.Timestamp,
 		})
 	}
 

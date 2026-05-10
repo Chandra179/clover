@@ -55,11 +55,12 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 			content = content[:300] + "..."
 		}
 		results = append(results, CategoryResult{
-			Title:    item.Title,
-			URL:      item.Link,
-			Content:  content,
-			Category: category,
-			Source:   "rsshub",
+			Title:       item.Title,
+			URL:         item.Link,
+			Content:     content,
+			Category:    category,
+			Source:      "rsshub",
+			PublishedAt: item.PubDate,
 		})
 	}
 

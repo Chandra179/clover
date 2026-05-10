@@ -16,11 +16,12 @@ var CategorySubreddits = map[string][]string{
 }
 
 type CategoryResult struct {
-	Title    string `json:"title"`
-	URL      string `json:"url"`
-	Content  string `json:"content"`
-	Category string `json:"category"`
-	Source   string `json:"source"`
+	Title       string `json:"title"`
+	URL         string `json:"url"`
+	Content     string `json:"content"`
+	Category    string `json:"category"`
+	Source      string `json:"source"`
+	PublishedAt string `json:"published_at"`
 }
 
 type hotListing struct {
@@ -91,11 +92,12 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 				content = content[:300] + "..."
 			}
 			results = append(results, CategoryResult{
-				Title:    child.Data.Title,
-				URL:      u,
-				Content:  content,
-				Category: category,
-				Source:   "reddit",
+				Title:       child.Data.Title,
+				URL:         u,
+				Content:     content,
+				Category:    category,
+				Source:      "reddit",
+				PublishedAt: time.Unix(int64(child.Data.Created), 0).Format(time.RFC3339),
 			})
 		}
 	}

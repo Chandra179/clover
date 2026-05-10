@@ -47,9 +47,28 @@ type Updates struct {
 }
 
 type CategoryResult struct {
-	Title    string `json:"title"`
-	URL      string `json:"url"`
-	Content  string `json:"content"`
-	Category string `json:"category"`
-	Source   string `json:"source"`
+	Title       string `json:"title"`
+	URL         string `json:"url"`
+	Content     string `json:"content"`
+	Category    string `json:"category"`
+	Source      string `json:"source"`
+	PublishedAt string `json:"published_at"`
+}
+
+type AlgoliaResponse struct {
+	Hits        []AlgoliaHit `json:"hits"`
+	NbHits      int          `json:"nbHits"`
+	Page        int          `json:"page"`
+	NbPages     int          `json:"nbPages"`
+	HitsPerPage int          `json:"hitsPerPage"`
+}
+
+type AlgoliaHit struct {
+	Title       string `json:"title"`
+	URL         string `json:"url"`
+	Author      string `json:"author"`
+	Points      int    `json:"points"`
+	StoryText   string `json:"story_text"`
+	ObjectID    string `json:"objectID"`
+	CreatedAt   string `json:"created_at"`
 }

@@ -9,7 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"brook/handler"
+	"brook/modules/hackernews"
+	"brook/modules/lobsters"
 	"brook/modules/reddit"
+	"brook/modules/rss"
+	"brook/modules/rsshub"
 	"brook/modules/wikipedia"
 )
 
@@ -22,9 +26,7 @@ func main() {
 			BaseURL:   "https://www.reddit.com",
 			UserAgent: "brook/1.0",
 		},
-		Logger: reddit.LoggerConfig{
-			Level: "dev",
-		},
+		Logger: reddit.LoggerConfig{Level: "dev"},
 	})
 
 	wk := wikipedia.NewDependencies(wikipedia.Config{
@@ -32,12 +34,47 @@ func main() {
 			BaseURL:   "https://en.wikipedia.org",
 			UserAgent: "brook/1.0",
 		},
-		Logger: wikipedia.LoggerConfig{
-			Level: "dev",
-		},
+		Logger: wikipedia.LoggerConfig{Level: "dev"},
 	})
 
-	h := handler.NewDependencies(rd, wk)
+	hn := hackernews.NewDependencies(hackernews.Config{
+		HackerNews: hackernews.HNConfig{
+			BaseURL: "https://hn.algolia.com",
+		},
+		Logger: hackernews.LoggerConfig{Level: "dev"},
+	})
+
+	lb := lobsters.NewDependencies(lobsters.Config{
+		Lobsters: lobsters.LobstersConfig{
+			BaseURL: "https://lobste.rs",
+		},
+		Logger: lobsters.LoggerConfig{Level: "dev"},
+	})
+
+	rs := rss.NewDependencies(rss.Config{
+		RSS: rss.RSSConfig{
+			Categories: map[string][]string{
+				"economy": {
+					"https://feeds.bbci.co.uk/news/business/rss.xml",
+					"https://www.cnbc.com/id/100003114/device/rss/rss.html",
+				},
+				"tech": {
+					"https://feeds.bbci.co.uk/news/technology/rss.xml",
+					"https://www.theverge.com/rss/index.xml",
+				},
+			},
+		},
+		Logger: rss.LoggerConfig{Level: "dev"},
+	})
+
+	rh := rsshub.NewDependencies(rsshub.Config{
+		RSSHub: rsshub.RSSHubConfig{
+			BaseURL: "https://rsshub.app",
+		},
+		Logger: rsshub.LoggerConfig{Level: "dev"},
+	})
+
+	h := handler.NewDependencies(rd, wk, hn, lb, rs, rh)
 
 	r := gin.Default()
 	r.GET("/news", h.NewsHandler)

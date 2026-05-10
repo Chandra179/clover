@@ -14,7 +14,7 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 	ctx := context.Background()
 
 	tagMap := map[string]string{
-		"economy": "",
+		"economy": "finance",
 		"tech":    "programming",
 	}
 
@@ -27,9 +27,9 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 
 	var url string
 	if tag != "" {
-		url = fmt.Sprintf("%s/s/%s.json", d.Config.Lobsters.BaseURL, tag)
+		url = fmt.Sprintf("%s/t/%s.json", d.Config.Lobsters.BaseURL, tag)
 	} else {
-		url = d.Config.Lobsters.BaseURL + "/hot.json"
+		url = d.Config.Lobsters.BaseURL + "/newest.json"
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -60,11 +60,12 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 			cat = "general"
 		}
 		results = append(results, CategoryResult{
-			Title:    s.Title,
-			URL:      s.URL,
-			Content:  s.Description,
-			Category: cat,
-			Source:   "lobsters",
+			Title:       s.Title,
+			URL:         s.URL,
+			Content:     s.Description,
+			Category:    cat,
+			Source:      "lobsters",
+			PublishedAt: s.CreatedAt,
 		})
 	}
 

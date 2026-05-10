@@ -1,48 +1,44 @@
 # Brook — Agent Guide
 
-Go skeleton for evolutionary architecture. Module `brook`, Go 1.26.1.
+Go modular monolith skeleton. Module `brook`, Go 1.26.1. Uses `gin` for HTTP, `minio-go` for S3 storage.
 
-## Layout (current — docs are stale)
+## Entrypoint
 
-| What | Old path (in docs) | Actual path |
-|------|-------------------|-------------|
-| entrypoint | `cmd/http/main.go`, `cmd/grpc/main.go` | `cmd/order/main.go` |
-| business logic | `internal/modules/<name>/` | `modules/<name>/` |
-| middleware | `internal/middleware/` | `middleware/` |
-
-README documents old structure. Trust filesystem.
+`cmd/app/main.go` — hardcodes config inline, wires reddit + wikipedia modules into handler, starts Gin on `:8080`.
 
 ## Commands
 
 ```bash
 make vendor          # go mod tidy && go mod vendor
-go run cmd/order/main.go
+make up              # docker compose up -d (starts RustFS on :9000/:9001)
+make run             # go run cmd/app/main.go
 go build ./...
+go test ./storage/...  # needs RustFS running; skips if unreachable
 ```
 
-No test/lint/CI infrastructure. No `golangci-lint`, no pre-commit hooks.
+No golangci-lint, no pre-commit hooks, no CI.
 
 ## Module pattern (`modules/<name>/`)
 
 Flat Go package. Required: `dependencies.go` (DI wireup), `types.go` (domain types).
-Optional: `http.go`/`grpc.go`/`cron.go` entrypoint, `<action>.go` per handler.
-See `modules/README.md` for details.
+Optional: `fetch.go` etc per operation. See `modules/README.md`.
 
-## Middleware (`middleware/`)
+**Wired modules** (actually used by entrypoint): `reddit`, `wikipedia`.
+**Unwired** (exist but not imported): `hackernews`, `lobsters`, `rss`, `rsshub`.
 
-```go
-type Middleware func(http.Handler) http.Handler
-// Chain(handler, Recovery, RequestID, Timeout) — outermost first
-```
+## Known dead / unused code
 
-Stateless middleware = plain constructors. Logger-dependent middleware = methods on `*Dependencies`.
-`middleware.Dependencies` wraps shared state (logger from `github.com/Chandra179/gosdk`).
-gRPC interceptor `RequestIDUnaryInterceptor` lives alongside HTTP middleware in same package.
+- `middleware/` package (stdlib `http.Handler` chain) — NOT wired into Gin server, effectively library code
+- `config.Load()` function + `config/config.yaml` — entrypoint hardcodes config instead
+- Wikipedia `FetchCategory` goroutine in `handler/handler.go:51` — goroutine launched but never waited on (`wg.Done()` fires but Wikipedia results discarded)
+- gRPC interceptor in `middleware/request_id.go` — no gRPC server runs
+- `test.http` documents `/news` endpoint — used for manual curl testing
 
-## Config
+## Storage (`storage/`)
 
-YAML at `config/config.yaml`, loaded by `config.Load("config/config.yaml")`.
-Fields: `http.addr`, `http.*_timeout`, `grpc.addr`, `middleware.timeout`, `middleware.logger.level`.
+`ObjectStore` interface + `RustFS` implementation (S3-compatible via minio).
+ENV vars: `RUSTFS_ENDPOINT`, `RUSTFS_ACCESS_KEY`, `RUSTFS_SECRET_KEY`, `RUSTFS_USE_SSL`.
+Integration tests skip if RustFS not reachable. Start with `docker compose up -d`.
 
 ## Validation
 
@@ -51,5 +47,4 @@ Call inside handlers, not as middleware.
 
 ## State
 
-Repo is mid-restructure: old `internal/` files deleted on disk, new flat files untracked.
-No tests exist. No vendor in git (`.gitignore` has `vendor`).
+Mid-restructure. README documents old structure (references `order` module, old paths). Trust filesystem, not README.

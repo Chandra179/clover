@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/Chandra179/gosdk/logger"
@@ -23,10 +24,15 @@ var CategoryPrefixes = map[string]string{
 func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) {
 	ctx := context.Background()
 
+	query, ok := CategorySearchTerms[category]
+	if !ok {
+		return nil, fmt.Errorf("hackernews: unknown category: %s (allowed: economy, tech)", category)
+	}
+
 	client := &http.Client{Timeout: 10 * time.Second}
 
-	url := d.Config.HackerNews.BaseURL + "/topstories.json"
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	apiURL := fmt.Sprintf("https://hn.algolia.com/api/v1/search?query=%s&tags=story&hitsPerPage=15", url.QueryEscape(query))
+	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("hackernews: build request: %w", err)
 	}
@@ -37,55 +43,30 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 	}
 	defer resp.Body.Close()
 
-	var ids []int
-	if err := json.NewDecoder(resp.Body).Decode(&ids); err != nil {
-		return nil, fmt.Errorf("hackernews: decode ids: %w", err)
-	}
-
-	limit := 15
-	if len(ids) > limit {
-		ids = ids[:limit]
+	var algoliaResp AlgoliaResponse
+	if err := json.NewDecoder(resp.Body).Decode(&algoliaResp); err != nil {
+		return nil, fmt.Errorf("hackernews: decode: %w", err)
 	}
 
 	var results []CategoryResult
-	for _, id := range ids {
-		itemURL := d.Config.HackerNews.BaseURL + fmt.Sprintf("/item/%d.json", id)
-		req, err := http.NewRequestWithContext(ctx, "GET", itemURL, nil)
-		if err != nil {
-			continue
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			continue
-		}
-
-		var item Item
-		if err := json.NewDecoder(resp.Body).Decode(&item); err != nil {
-			resp.Body.Close()
-			continue
-		}
-		resp.Body.Close()
-
-		if item.Deleted || item.Dead || item.Title == "" {
-			continue
-		}
-
-		content := item.Text
+	for _, hit := range algoliaResp.Hits {
+		content := hit.StoryText
 		if len(content) > 300 {
 			content = content[:300] + "..."
 		}
 
-		url := item.URL
-		if url == "" {
-			url = fmt.Sprintf("https://news.ycombinator.com/item?id=%d", item.ID)
+		u := hit.URL
+		if u == "" {
+			u = fmt.Sprintf("https://news.ycombinator.com/item?id=%s", hit.ObjectID)
 		}
 
 		results = append(results, CategoryResult{
-			Title:    item.Title,
-			URL:      url,
-			Content:  content,
-			Category: category,
-			Source:   "hackernews",
+			Title:       hit.Title,
+			URL:         u,
+			Content:     content,
+			Category:    category,
+			Source:      "hackernews",
+			PublishedAt: hit.CreatedAt,
 		})
 	}
 
