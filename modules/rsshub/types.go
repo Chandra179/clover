@@ -33,11 +33,4 @@ type Item struct {
 	Category    string `json:"category,omitempty"`
 }
 
-type CategoryResult struct {
-	Title       string `json:"title"`
-	URL         string `json:"url"`
-	Content     string `json:"content"`
-	Category    string `json:"category"`
-	Source      string `json:"source"`
-	PublishedAt string `json:"published_at"`
-}
+

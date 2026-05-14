@@ -4,5 +4,20 @@ GET http://localhost:8080/news
 ### GET /news?category=tech
 GET http://localhost:8080/news?category=tech
 
+### GET /news?category=tech&topics=3
+GET http://localhost:8080/news?category=tech&topics=3
+
 ### GET /news?category=economy
 GET http://localhost:8080/news?category=economy
+
+### GET /news?category=science
+GET http://localhost:8080/news?category=science
+
+### GET /news?category=ai
+GET http://localhost:8080/news?category=ai
+
+### GET /news?category=security
+GET http://localhost:8080/news?category=security
+
+### GET /news?category=startups
+GET http://localhost:8080/news?category=startups

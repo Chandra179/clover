@@ -9,10 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"brook/modules/common"
+
 	"github.com/Chandra179/gosdk/logger"
 )
 
-func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) {
+func (d *Dependencies) FetchCategory(category string) ([]common.CategoryResult, error) {
 	ctx := context.Background()
 
 	feedURLs, ok := d.Config.RSS.Categories[category]
@@ -21,7 +23,7 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 	}
 
 	client := &http.Client{Timeout: 15 * time.Second}
-	var results []CategoryResult
+	var results []common.CategoryResult
 
 	for _, feedURL := range feedURLs {
 		items, err := d.fetchFeed(ctx, client, feedURL)
@@ -33,7 +35,7 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 			continue
 		}
 		for _, item := range items {
-			results = append(results, CategoryResult{
+			results = append(results, common.CategoryResult{
 				Title:       item.Title,
 				URL:         item.Link,
 				Content:     truncate(item.Content, 300),

@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"time"
 
+	"brook/modules/common"
+
 	"github.com/Chandra179/gosdk/logger"
 )
 
@@ -21,7 +23,7 @@ var CategoryPrefixes = map[string]string{
 	"tech":    "",
 }
 
-func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) {
+func (d *Dependencies) FetchCategory(category string) ([]common.CategoryResult, error) {
 	ctx := context.Background()
 
 	query, ok := CategorySearchTerms[category]
@@ -48,7 +50,7 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 		return nil, fmt.Errorf("hackernews: decode: %w", err)
 	}
 
-	var results []CategoryResult
+	var results []common.CategoryResult
 	for _, hit := range algoliaResp.Hits {
 		content := hit.StoryText
 		if len(content) > 300 {
@@ -60,7 +62,7 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 			u = fmt.Sprintf("https://news.ycombinator.com/item?id=%s", hit.ObjectID)
 		}
 
-		results = append(results, CategoryResult{
+		results = append(results, common.CategoryResult{
 			Title:       hit.Title,
 			URL:         u,
 			Content:     content,

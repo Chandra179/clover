@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"time"
 
+	"brook/modules/common"
+
 	"github.com/Chandra179/gosdk/logger"
 )
 
-func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) {
+func (d *Dependencies) FetchCategory(category string) ([]common.CategoryResult, error) {
 	ctx := context.Background()
 
 	tagMap := map[string]string{
@@ -53,13 +55,13 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 		stories = stories[:limit]
 	}
 
-	var results []CategoryResult
+	var results []common.CategoryResult
 	for _, s := range stories {
 		cat := category
 		if cat == "" {
 			cat = "general"
 		}
-		results = append(results, CategoryResult{
+		results = append(results, common.CategoryResult{
 			Title:       s.Title,
 			URL:         s.URL,
 			Content:     s.Description,

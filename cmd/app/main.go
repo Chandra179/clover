@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Chandra179/gosdk/logger"
 	"github.com/gin-gonic/gin"
 
 	"brook/handler"
+	"brook/modules/common"
 	"brook/modules/hackernews"
 	"brook/modules/lobsters"
 	"brook/modules/reddit"
@@ -62,6 +64,19 @@ func main() {
 					"https://feeds.bbci.co.uk/news/technology/rss.xml",
 					"https://www.theverge.com/rss/index.xml",
 				},
+				"science": {
+					"https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+					"https://www.nature.com/nature.rss",
+				},
+				"ai": {
+					"https://feeds.feedburner.com/ArtificialIntelligenceNews",
+				},
+				"security": {
+					"https://feeds.bbci.co.uk/news/technology/rss.xml",
+				},
+				"startups": {
+					"https://feeds.feedburner.com/TechCrunch",
+				},
 			},
 		},
 		Logger: rss.LoggerConfig{Level: "dev"},
@@ -74,7 +89,18 @@ func main() {
 		Logger: rsshub.LoggerConfig{Level: "dev"},
 	})
 
-	h := handler.NewDependencies(rd, wk, hn, lb, rs, rh)
+	cache := common.NewCache(60 * time.Second)
+
+	fetchers := []common.Fetcher{
+		&common.CachedFetcher{Source: "reddit", Fetcher: rd, Cache: cache},
+		&common.CachedFetcher{Source: "wikipedia", Fetcher: wk, Cache: cache},
+		&common.CachedFetcher{Source: "hackernews", Fetcher: hn, Cache: cache},
+		&common.CachedFetcher{Source: "lobsters", Fetcher: lb, Cache: cache},
+		&common.CachedFetcher{Source: "rss", Fetcher: rs, Cache: cache},
+		&common.CachedFetcher{Source: "rsshub", Fetcher: rh, Cache: cache},
+	}
+
+	h := handler.NewDependencies(fetchers)
 
 	r := gin.Default()
 	r.GET("/news", h.NewsHandler)

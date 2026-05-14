@@ -7,21 +7,14 @@ import (
 	"net/http"
 	"time"
 
+	"brook/modules/common"
+
 	"github.com/Chandra179/gosdk/logger"
 )
 
 var CategorySubreddits = map[string][]string{
 	"economy": {"Economics", "economy"},
 	"tech":    {"technology", "programming"},
-}
-
-type CategoryResult struct {
-	Title       string `json:"title"`
-	URL         string `json:"url"`
-	Content     string `json:"content"`
-	Category    string `json:"category"`
-	Source      string `json:"source"`
-	PublishedAt string `json:"published_at"`
 }
 
 type hotListing struct {
@@ -38,7 +31,7 @@ type hotListing struct {
 	} `json:"data"`
 }
 
-func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) {
+func (d *Dependencies) FetchCategory(category string) ([]common.CategoryResult, error) {
 	ctx := context.Background()
 
 	subs, ok := CategorySubreddits[category]
@@ -47,7 +40,7 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 	}
 
 	client := &http.Client{Timeout: 10 * time.Second}
-	var results []CategoryResult
+	var results []common.CategoryResult
 
 	for _, sub := range subs {
 		url := fmt.Sprintf("%s/r/%s/hot.json?limit=10", d.Config.Reddit.BaseURL, sub)
@@ -91,7 +84,7 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 			if len(content) > 300 {
 				content = content[:300] + "..."
 			}
-			results = append(results, CategoryResult{
+			results = append(results, common.CategoryResult{
 				Title:       child.Data.Title,
 				URL:         u,
 				Content:     content,

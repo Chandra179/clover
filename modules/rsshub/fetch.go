@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"brook/modules/common"
+
 	"github.com/Chandra179/gosdk/logger"
 )
 
@@ -15,7 +17,7 @@ var CategoryRoutes = map[string]string{
 	"tech":    "github/trending/daily",
 }
 
-func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) {
+func (d *Dependencies) FetchCategory(category string) ([]common.CategoryResult, error) {
 	ctx := context.Background()
 
 	route, ok := CategoryRoutes[category]
@@ -48,13 +50,13 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 		feed.Items = feed.Items[:limit]
 	}
 
-	var results []CategoryResult
+	var results []common.CategoryResult
 	for _, item := range feed.Items {
 		content := item.Description
 		if len(content) > 300 {
 			content = content[:300] + "..."
 		}
-		results = append(results, CategoryResult{
+		results = append(results, common.CategoryResult{
 			Title:       item.Title,
 			URL:         item.Link,
 			Content:     content,

@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"time"
 
+	"brook/modules/common"
+
 	"github.com/Chandra179/gosdk/logger"
 )
 
@@ -16,16 +18,7 @@ var CategorySearchTerms = map[string]string{
 	"tech":    "technology OR computing OR software OR internet",
 }
 
-type CategoryResult struct {
-	Title       string `json:"title"`
-	URL         string `json:"url"`
-	Content     string `json:"content"`
-	Category    string `json:"category"`
-	Source      string `json:"source"`
-	PublishedAt string `json:"published_at"`
-}
-
-func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) {
+func (d *Dependencies) FetchCategory(category string) ([]common.CategoryResult, error) {
 	ctx := context.Background()
 
 	query, ok := CategorySearchTerms[category]
@@ -65,10 +58,10 @@ func (d *Dependencies) FetchCategory(category string) ([]CategoryResult, error) 
 		return nil, fmt.Errorf("wikipedia: empty query result")
 	}
 
-	var results []CategoryResult
+	var results []common.CategoryResult
 	for _, s := range qr.Query.Search {
 		u := fmt.Sprintf("https://en.wikipedia.org/wiki/%s", url.PathEscape(s.Title))
-		results = append(results, CategoryResult{
+		results = append(results, common.CategoryResult{
 			Title:       s.Title,
 			URL:         u,
 			Content:     stripHTML(s.Snippet),
