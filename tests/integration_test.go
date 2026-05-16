@@ -22,7 +22,7 @@ type newsResponse struct {
 }
 
 func TestIntegration_NewsEndpoint(t *testing.T) {
-	base := "http://localhost:8080"
+	base := "http://localhost:8001"
 	client := &http.Client{Timeout: 30 * time.Second}
 
 	tests := []struct {

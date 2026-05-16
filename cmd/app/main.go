@@ -11,6 +11,7 @@ import (
 
 	"brook/handler"
 	"brook/modules/common"
+	"brook/modules/github"
 	"brook/modules/hackernews"
 	"brook/modules/lobsters"
 	"brook/modules/reddit"
@@ -89,6 +90,13 @@ func main() {
 		Logger: rsshub.LoggerConfig{Level: "dev"},
 	})
 
+	gh := github.NewDependencies(github.Config{
+		GitHub: github.GHConfig{
+			BaseURL: "https://api.github.com",
+		},
+		Logger: github.LoggerConfig{Level: "dev"},
+	})
+
 	cache := common.NewCache(60 * time.Second)
 
 	fetchers := []common.Fetcher{
@@ -98,6 +106,7 @@ func main() {
 		&common.CachedFetcher{Source: "lobsters", Fetcher: lb, Cache: cache},
 		&common.CachedFetcher{Source: "rss", Fetcher: rs, Cache: cache},
 		&common.CachedFetcher{Source: "rsshub", Fetcher: rh, Cache: cache},
+		&common.CachedFetcher{Source: "github", Fetcher: gh, Cache: cache},
 	}
 
 	h := handler.NewDependencies(fetchers)
@@ -105,8 +114,8 @@ func main() {
 	r := gin.Default()
 	r.GET("/news", h.NewsHandler)
 
-	log.Info(ctx, "starting server", logger.Field{Key: "addr", Value: ":8080"})
-	if err := r.Run(":8080"); err != nil {
+	log.Info(ctx, "starting server", logger.Field{Key: "addr", Value: ":8001"})
+	if err := r.Run(":8001"); err != nil {
 		log.Error(ctx, "server failed", logger.Field{Key: "err", Value: err})
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
